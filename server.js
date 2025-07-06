@@ -80,13 +80,26 @@ app.use(express.static(__dirname));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Simple root route for testing
+// Root route - serve registration page
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Microfinance App Server is running!',
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
+  res.sendFile(path.join(__dirname, 'register.html'));
+});
+
+// Workflow routes
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'register.html'));
+});
+
+app.get('/verify', (req, res) => {
+  res.sendFile(path.join(__dirname, 'verify.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // Test route to check if routes are loading
