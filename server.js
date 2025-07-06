@@ -74,9 +74,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Add static file serving for HTML files
-app.use(express.static(__dirname));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -110,6 +107,9 @@ app.get('/test-route', (req, res) => {
 app.post('/test-post', (req, res) => {
   res.json({ message: 'Test POST route works!' });
 });
+
+// Add static file serving for HTML files (should be after all custom routes)
+app.use(express.static(__dirname));
 
 // DB connection
 const db = mysql.createPool({
