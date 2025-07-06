@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .section {
+      background: white;
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    .user-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background-color: #fafafa;
+    }
+    .user-card h3 {
+      margin: 0 0 10px 0;
+      color: #007bff;
+    }
+    .user-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    .user-info h4 {
+      color: #007bff;
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      border-bottom: 1px solid #e9ecef;
+      padding-bottom: 5px;
+    }
+    .user-info p {
+      margin: 5px 0;
+      font-size: 13px;
+    }
+    .file-links {
+      margin: 10px 0;
+    }
+    .file-links a {
+      display: inline-block;
+      margin-right: 15px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .file-links a:hover {
+      background-color: #0056b3;
+    }
+    .action-buttons {
+      margin-top: 10px;
+    }
+    .btn {
+      padding: 8px 16px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-approve {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-approve:hover {
+      background-color: #218838;
+    }
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+    }
+    .btn-reject:hover {
+      background-color: #c82333;
+    }
+    .empty-message {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px;
+    }
+    .error-message {
+      color: #dc3545;
+      text-align: center;
+      padding: 20px;
+    }
+    .notification-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background-color: #fafafa;
+      transition: all 0.3s ease;
+    }
+    .notification-card.unread {
+      border-left: 4px solid #ffc107;
+      background-color: #fffbf0;
+    }
+    .notification-card.read {
+      border-left: 4px solid #28a745;
+      background-color: #f8fff8;
+    }
+    .notification-card h3 {
+      margin: 0 0 10px 0;
+      color: #007bff;
+    }
+    .notification-card.read h3 {
+      color: #666;
+    }
+    .notification-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center; color: #333;">Admin Panel</h1>
+
+  <div style="text-align: right; margin-bottom: 20px;">
+    <button onclick="logout()" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Logout</button>
+  </div>
+
+  <div class="section">
+    <h2>🔔 Recent Notifications</h2>
+    <div id="notifications"></div>
+  </div>
+
+  <div class="section">
+    <h2>📋 Pending Approvals</h2>
+    <div id="pendingApprovals"></div>
+  </div>
+
+  <div class="section">
+    <h2>Pending Registrations</h2>
+    <div id="pendingUsers"></div>
+  </div>
+
+  <div class="section">
+    <h2>Approved Users</h2>
+    <div id="approvedUsers"></div>
+  </div>
+
+  <div class="section">
+    <h2>Rejected Users</h2>
+    <div id="rejectedUsers"></div>
+  </div>
+
+  <script>
+    let isLoading = false;
+    let loadTimeout = null;
+    let readNotifications = new Set(); // Track read notifications
+
+    async function loadUsers(url, containerId, showButtons = false) {
+      try {
+        const res = await fetch(url);
+        const users = await res.json();
+
+        if (!Array.isArray(users)) throw new Error("Invalid data format");
+
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (users.length === 0) {
+          container.innerHTML = '<div class="empty-message">No users found in this category.</div>';
+          return;
+        }
+
+        users.forEach(user => {
+          const div = document.createElement("div");
+          div.className = "user-card";
+
+          const fileName = (path) => {
+            return path ? path.split('/').pop() : 'No file';
+          };
+
+          div.innerHTML = `
+            <h3>${user.first_name} ${user.last_name} ${user.middle_name ? user.middle_name : ''}</h3>
+            <div class="user-info">
+              <div>
+                <h4>Personal Information</h4>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Phone:</strong> ${user.phone_number}</p>
+                <p><strong>Gender:</strong> ${user.gender}</p>
+                <p><strong>Civil Status:</strong> ${user.civil_status}</p>
+                <p><strong>Mother's Maiden Name:</strong> ${user.mothers_maiden_name}</p>
+              </div>
+              <div>
+                <h4>Address Information</h4>
+                <p><strong>Country:</strong> ${user.country}</p>
+                <p><strong>Province:</strong> ${user.province}</p>
+                <p><strong>City/Municipality:</strong> ${user.city_municipality}</p>
+                <p><strong>Barangay:</strong> ${user.barangay}</p>
+                <p><strong>Address Line 1:</strong> ${user.subdivision_address1}</p>
+                ${user.street_address2 ? `<p><strong>Address Line 2:</strong> ${user.street_address2}</p>` : ''}
+                <p><strong>ZIP Code:</strong> ${user.zipcode}</p>
+              </div>
+              <div>
+                <h4>ID Information</h4>
+                <p><strong>ID Type:</strong> ${user.valid_id_type}</p>
+                <p><strong>ID Number:</strong> ${user.id_number}</p>
+              </div>
+              <div>
+                <h4>Registration Details</h4>
+                <p><strong>Status:</strong> <span style="color: ${user.status === 'pending' ? '#ffc107' : user.status === 'approved' ? '#28a745' : '#dc3545'}">${user.status.toUpperCase()}</span></p>
+                <p><strong>Registered:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
+                ${user.updated_at ? `<p><strong>Last Updated:</strong> ${new Date(user.updated_at).toLocaleDateString()}</p>` : ''}
+              </div>
+            </div>
+            <div class="file-links">
+              <strong>Documents:</strong><br>
+              <a href="http://localhost:3000/uploads/${fileName(user.selfie_path)}" target="_blank">View Selfie</a>
+              <a href="http://localhost:3000/uploads/${fileName(user.gov_id_path)}" target="_blank">View Government ID</a>
+            </div>
+          `;
+
+          if (showButtons) {
+            const actionDiv = document.createElement("div");
+            actionDiv.className = "action-buttons";
+            
+            const approveBtn = document.createElement("button");
+            approveBtn.textContent = "Approve";
+            approveBtn.className = "btn btn-approve";
+            approveBtn.onclick = async () => {
+              try {
+                const response = await fetch(`http://localhost:3000/admin/approve/${user.id}`, { method: "POST" });
+                if (response.ok) {
+                  alert("User approved successfully!");
+                  loadAll();
+                } else {
+                  alert("Failed to approve user");
+                }
+              } catch (err) {
+                console.error("Error approving user:", err);
+                alert("Error approving user");
+              }
+            };
+
+            const rejectBtn = document.createElement("button");
+            rejectBtn.textContent = "Reject";
+            rejectBtn.className = "btn btn-reject";
+            rejectBtn.onclick = async () => {
+              try {
+                const response = await fetch(`http://localhost:3000/admin/reject/${user.id}`, { method: "POST" });
+                if (response.ok) {
+                  alert("User rejected successfully!");
+                  loadAll();
+                } else {
+                  alert("Failed to reject user");
+                }
+              } catch (err) {
+                console.error("Error rejecting user:", err);
+                alert("Error rejecting user");
+              }
+            };
+
+            actionDiv.appendChild(approveBtn);
+            actionDiv.appendChild(rejectBtn);
+            div.appendChild(actionDiv);
+          }
+
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error(`Error loading from ${url}:`, err);
+        document.getElementById(containerId).innerHTML = '<div class="error-message">Failed to load users.</div>';
+      }
+    }
+
+    function loadAll() {
+      if (isLoading) {
+        console.log('Loading already in progress, skipping...');
+        return;
+      }
+      
+      // Clear any existing timeout
+      if (loadTimeout) {
+        clearTimeout(loadTimeout);
+      }
+      
+      // Set a small delay to prevent rapid calls
+      loadTimeout = setTimeout(() => {
+        isLoading = true;
+        console.log('Loading all data...');
+        
+        Promise.all([
+          loadUsers("http://localhost:3000/admin/pending", "pendingUsers", true),
+          loadUsers("http://localhost:3000/admin/approved", "approvedUsers"),
+          loadUsers("http://localhost:3000/admin/rejected", "rejectedUsers"),
+          loadNotifications(),
+          loadPendingApprovals()
+        ]).finally(() => {
+          isLoading = false;
+          console.log('All data loaded');
+        });
+      }, 100);
+    }
+
+    async function loadNotifications() {
+      try {
+        const response = await fetch("http://localhost:3000/admin/notifications");
+        const notifications = await response.json();
+
+        const container = document.getElementById("notifications");
+        container.innerHTML = "";
+
+        if (notifications.length === 0) {
+          container.innerHTML = '<div class="empty-message">No notifications found.</div>';
+          return;
+        }
+
+        notifications.forEach(notification => {
+          const div = document.createElement("div");
+          div.className = "notification-card";
+          div.setAttribute('data-notification-id', notification.id);
+          
+          // Check if notification has been marked as read
+          const isRead = readNotifications.has(notification.id);
+          div.classList.add(isRead ? 'read' : 'unread');
+          
+          const isReadText = isRead ? " (Read)" : " (New)";
+          
+          // Fix the type property access
+          const notificationType = notification.type || 'unknown';
+          const typeDisplay = notificationType.replace('_', ' ').toUpperCase();
+          
+          div.innerHTML = `
+            <h3>
+              🔔 ${typeDisplay}${isReadText}
+            </h3>
+            <p><strong>Message:</strong> ${notification.message}</p>
+            <p><strong>Time:</strong> ${new Date(notification.created_at).toLocaleString()}</p>
+            ${notification.user_name ? `<p><strong>User:</strong> ${notification.user_name} (${notification.phone_number})</p>` : ''}
+            ${!isRead ? '<div class="notification-actions"><button onclick="markAsRead(\'' + notification.id + '\')" class="btn btn-approve">Mark as Read</button></div>' : ''}
+          `;
+          
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Error loading notifications:", err);
+        document.getElementById("notifications").innerHTML = '<div class="error-message">Failed to load notifications.</div>';
+      }
+    }
+
+    async function loadPendingApprovals() {
+      try {
+        const response = await fetch("http://localhost:3000/admin/notifications");
+        const notifications = await response.json();
+
+        const container = document.getElementById("pendingApprovals");
+        container.innerHTML = "";
+
+        // Filter for flagged registrations that need approval
+        const pendingApprovals = notifications.filter(notification => 
+          notification.type === 'flagged_registration' && !readNotifications.has(notification.id)
+        );
+
+        if (pendingApprovals.length === 0) {
+          container.innerHTML = '<div class="empty-message">No pending approvals found.</div>';
+          return;
+        }
+
+        pendingApprovals.forEach(notification => {
+          const div = document.createElement("div");
+          div.className = "notification-card unread";
+          div.setAttribute('data-notification-id', notification.id);
+          
+          div.innerHTML = `
+            <h3>⚠️ Flagged Registration - Requires Review</h3>
+            <p><strong>Message:</strong> ${notification.message}</p>
+            <p><strong>Time:</strong> ${new Date(notification.created_at).toLocaleString()}</p>
+            ${notification.user_name ? `<p><strong>User:</strong> ${notification.user_name} (${notification.phone_number})</p>` : ''}
+            <div class="notification-actions">
+              <button onclick="markAsRead('${notification.id}')" class="btn btn-approve">Mark as Read</button>
+              <button onclick="approveUser('${notification.id}')" class="btn btn-approve">Approve User</button>
+              <button onclick="rejectUser('${notification.id}')" class="btn btn-reject">Reject User</button>
+            </div>
+          `;
+          
+          container.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Error loading pending approvals:", err);
+        document.getElementById("pendingApprovals").innerHTML = '<div class="error-message">Failed to load pending approvals.</div>';
+      }
+    }
+
+    async function markAsRead(notificationId) {
+      try {
+        const response = await fetch(`http://localhost:3000/admin/notifications/${notificationId}/read`, { 
+          method: "POST" 
+        });
+        if (response.ok) {
+          // Add to read notifications set
+          readNotifications.add(notificationId);
+          
+          // Update the specific notification in the UI
+          const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+          if (notificationElement) {
+            // Update the notification appearance
+            notificationElement.classList.remove('unread');
+            notificationElement.classList.add('read');
+            
+            // Remove the "Mark as Read" button
+            const markAsReadBtn = notificationElement.querySelector('.btn-approve');
+            if (markAsReadBtn && markAsReadBtn.textContent === 'Mark as Read') {
+              markAsReadBtn.remove();
+            }
+            
+            // Update the title to show it's read
+            const titleElement = notificationElement.querySelector('h3');
+            titleElement.innerHTML = titleElement.innerHTML.replace(' (New)', ' (Read)');
+          }
+          console.log('✅ Notification marked as read:', notificationId);
+        } else {
+          console.error('Failed to mark notification as read');
+        }
+      } catch (err) {
+        console.error("Error marking notification as read:", err);
+      }
+    }
+
+    async function approveUser(notificationId) {
+      try {
+        // Extract user ID from notification ID (assuming format: user_123 or otp_123)
+        const userId = notificationId.replace('user_', '').replace('otp_', '');
+        
+        const response = await fetch(`http://localhost:3000/admin/approve/${userId}`, { 
+          method: "POST" 
+        });
+        if (response.ok) {
+          alert("User approved successfully!");
+          markAsRead(notificationId);
+          loadAll(); // Reload all data
+        } else {
+          alert("Failed to approve user");
+        }
+      } catch (err) {
+        console.error("Error approving user:", err);
+        alert("Error approving user");
+      }
+    }
+
+    async function rejectUser(notificationId) {
+      try {
+        // Extract user ID from notification ID (assuming format: user_123 or otp_123)
+        const userId = notificationId.replace('user_', '').replace('otp_', '');
+        
+        const response = await fetch(`http://localhost:3000/admin/reject/${userId}`, { 
+          method: "POST" 
+        });
+        if (response.ok) {
+          alert("User rejected successfully!");
+          markAsRead(notificationId);
+          loadAll(); // Reload all data
+        } else {
+          alert("Failed to reject user");
+        }
+      } catch (err) {
+        console.error("Error rejecting user:", err);
+        alert("Error rejecting user");
+      }
+    }
+
+    // Check authentication on page load
+    window.onload = function() {
+      const isLoggedIn = localStorage.getItem('adminLoggedIn');
+      if (isLoggedIn !== 'true') {
+        alert('Please login to access the admin panel');
+        window.location.href = 'login.html';
+        return;
+      }
+      // Only call loadAll once on page load
+      loadAll();
+    };
+
+    function logout() {
+      localStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('adminToken');
+      alert('Logged out successfully');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

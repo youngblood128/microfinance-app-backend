@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Registration Error - Microfinance App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .error-container {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      margin: 20px;
+      text-align: center;
+    }
+    
+    .error-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .error-title {
+      color: #dc3545;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    
+    .error-message {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title" id="errorTitle">Registration Error</div>
+    <div class="error-message" id="errorMessage">An error occurred during registration.</div>
+    
+    <div class="action-buttons" id="actionButtons">
+      <a href="register.html" class="btn btn-primary">Try Again</a>
+      <a href="user-login.html" class="btn btn-secondary">Go to Login</a>
+    </div>
+  </div>
+
+  <script>
+    // Get error details from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const message = urlParams.get('message');
+    
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+    const actionButtons = document.getElementById('actionButtons');
+    
+    if (error && message) {
+      // Decode the message
+      const decodedMessage = decodeURIComponent(message);
+      
+      if (error === 'PHONE_EXISTS') {
+        errorTitle.textContent = 'Phone Number Already Registered';
+        errorMessage.textContent = decodedMessage;
+        actionButtons.innerHTML = `
+          <a href="user-login.html" class="btn btn-success">Go to Login</a>
+          <a href="register.html" class="btn btn-secondary">Try Different Phone</a>
+        `;
+      } else if (error === 'NAME_EXISTS') {
+        errorTitle.textContent = 'Account Already Exists';
+        errorMessage.textContent = decodedMessage;
+        actionButtons.innerHTML = `
+          <a href="user-login.html" class="btn btn-success">Go to Login</a>
+          <a href="register.html" class="btn btn-secondary">Try Different Name</a>
+        `;
+      } else {
+        errorTitle.textContent = 'Registration Error';
+        errorMessage.textContent = decodedMessage;
+      }
+    }
+  </script>
+</body>
+</html> 
