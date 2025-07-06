@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Form</title>
+</head>
+<body>
+    <h1>Test Form</h1>
+    <form action="/register-form" method="post" enctype="multipart/form-data">
+        <p>Phone Number: <input type="text" name="phone_number" value="1234567890" required></p>
+        <p>First Name: <input type="text" name="first_name" value="Lazny Mayze" required></p>
+        <p>Middle Name: <input type="text" name="middle_name" value="" placeholder="Optional"></p>
+        <p>Last Name: <input type="text" name="last_name" value="Dongallo" required></p>
+        <p>Email: <input type="email" name="email" value="test@test.com" required></p>
+        <p>Gender: <select name="gender" required>
+            <option value="Male">Male</option>
+        </select></p>
+        <p>Civil Status: <select name="civil_status" required>
+            <option value="Single">Single</option>
+        </select></p>
+        <p>Country: <input type="text" name="country" value="Philippines" required></p>
+        <p>Province: <input type="text" name="province" value="Test" required></p>
+        <p>City: <input type="text" name="city_municipality" value="Test" required></p>
+        <p>Barangay: <input type="text" name="barangay" value="Test" required></p>
+        <p>Zipcode: <input type="text" name="zipcode" value="1234" required></p>
+        <p>Address: <input type="text" name="subdivision_address1" value="Test" required></p>
+        <p>Mother's Name: <input type="text" name="mothers_maiden_name" value="Test" required></p>
+        <p>ID Type: <select name="valid_id_type" required>
+            <option value="Passport">Passport</option>
+        </select></p>
+        <p>ID Number: <input type="text" name="id_number" value="123456" required></p>
+        <p>Selfie: <input type="file" name="selfie" required></p>
+        <p>Government ID: <input type="file" name="gov_id" required></p>
+        <button type="submit">Submit Test</button>
+    </form>
+</body>
+</html> 

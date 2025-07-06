@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard - Microfinance App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .welcome-card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .welcome-card h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .welcome-card p {
+      color: #666;
+      margin: 0;
+    }
+    .profile-section {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    .profile-section h3 {
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .profile-item {
+      margin-bottom: 15px;
+    }
+    .profile-item label {
+      font-weight: bold;
+      color: #555;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .profile-item span {
+      color: #333;
+      display: block;
+      padding: 8px 12px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border-left: 4px solid #667eea;
+    }
+    .documents-section {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .documents-section h3 {
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    .document-item {
+      margin-bottom: 20px;
+    }
+    .document-item label {
+      font-weight: bold;
+      color: #555;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .document-item img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .document-item img:hover {
+      transform: scale(1.05);
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .status-approved {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>User Dashboard</h1>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <div id="loading" class="loading">
+      <h3>Loading your profile...</h3>
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+
+    <div id="content" style="display: none;">
+      <div class="welcome-card">
+        <h2>Welcome, <span id="userName">User</span>!</h2>
+        <p>Your account is <span id="userStatus" class="status-badge status-approved">Approved</span></p>
+      </div>
+
+      <div class="profile-section">
+        <h3>Personal Information</h3>
+        <div class="profile-grid">
+          <div class="profile-item">
+            <label>Full Name</label>
+            <span id="fullName"></span>
+          </div>
+          <div class="profile-item">
+            <label>Gender</label>
+            <span id="gender"></span>
+          </div>
+          <div class="profile-item">
+            <label>Civil Status</label>
+            <span id="civilStatus"></span>
+          </div>
+          <div class="profile-item">
+            <label>Email</label>
+            <span id="email"></span>
+          </div>
+          <div class="profile-item">
+            <label>Phone Number</label>
+            <span id="phoneNumber"></span>
+          </div>
+          <div class="profile-item">
+            <label>Mother's Maiden Name</label>
+            <span id="mothersMaidenName"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3>Address Information</h3>
+        <div class="profile-grid">
+          <div class="profile-item">
+            <label>Country</label>
+            <span id="country"></span>
+          </div>
+          <div class="profile-item">
+            <label>Province</label>
+            <span id="province"></span>
+          </div>
+          <div class="profile-item">
+            <label>City/Municipality</label>
+            <span id="cityMunicipality"></span>
+          </div>
+          <div class="profile-item">
+            <label>Barangay</label>
+            <span id="barangay"></span>
+          </div>
+          <div class="profile-item">
+            <label>Subdivision/Address Line 1</label>
+            <span id="subdivisionAddress1"></span>
+          </div>
+          <div class="profile-item">
+            <label>Street Address Line 2</label>
+            <span id="streetAddress2"></span>
+          </div>
+          <div class="profile-item">
+            <label>Zip Code</label>
+            <span id="zipcode"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3>Identification Information</h3>
+        <div class="profile-grid">
+          <div class="profile-item">
+            <label>Valid ID Type</label>
+            <span id="validIdType"></span>
+          </div>
+          <div class="profile-item">
+            <label>ID Number</label>
+            <span id="idNumber"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="documents-section">
+        <h3>Submitted Documents</h3>
+        <div class="document-item">
+          <label>Selfie Photo</label>
+          <img id="selfieImage" src="" alt="Selfie" onclick="openImage(this.src)">
+        </div>
+        <div class="document-item">
+          <label>Government ID</label>
+          <img id="govIdImage" src="" alt="Government ID" onclick="openImage(this.src)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let userData = null;
+
+    // Check if user is logged in
+    window.onload = function() {
+      const isLoggedIn = localStorage.getItem('userLoggedIn');
+      if (isLoggedIn !== 'true') {
+        window.location.href = 'user-login.html';
+        return;
+      }
+
+      // Get user data from localStorage
+      const storedUserData = localStorage.getItem('userData');
+      if (storedUserData) {
+        userData = JSON.parse(storedUserData);
+        loadUserProfile();
+      } else {
+        showError('User data not found. Please login again.');
+      }
+    };
+
+    async function loadUserProfile() {
+      try {
+        const response = await fetch(`http://localhost:3000/user/profile/${userData.id}`);
+        const result = await response.json();
+
+        if (response.ok) {
+          displayUserProfile(result.user);
+        } else {
+          showError(result.error || 'Failed to load profile');
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        showError('Network error. Please check if the server is running.');
+      }
+    }
+
+    function displayUserProfile(user) {
+      // Hide loading, show content
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      // Set basic info
+      document.getElementById('userName').textContent = `${user.first_name} ${user.last_name}`;
+      document.getElementById('userStatus').textContent = user.status;
+      document.getElementById('fullName').textContent = `${user.first_name} ${user.middle_name || ''} ${user.last_name}`.trim();
+      document.getElementById('gender').textContent = user.gender || 'Not specified';
+      document.getElementById('civilStatus').textContent = user.civil_status || 'Not specified';
+      document.getElementById('email').textContent = user.email || 'Not specified';
+      document.getElementById('phoneNumber').textContent = user.phone_number;
+      document.getElementById('mothersMaidenName').textContent = user.mothers_maiden_name || 'Not specified';
+
+      // Set address info
+      document.getElementById('country').textContent = user.country || 'Not specified';
+      document.getElementById('province').textContent = user.province || 'Not specified';
+      document.getElementById('cityMunicipality').textContent = user.city_municipality || 'Not specified';
+      document.getElementById('barangay').textContent = user.barangay || 'Not specified';
+      document.getElementById('subdivisionAddress1').textContent = user.subdivision_address1 || 'Not specified';
+      document.getElementById('streetAddress2').textContent = user.street_address2 || 'Not specified';
+      document.getElementById('zipcode').textContent = user.zipcode || 'Not specified';
+
+      // Set ID info
+      document.getElementById('validIdType').textContent = user.valid_id_type || 'Not specified';
+      document.getElementById('idNumber').textContent = user.id_number || 'Not specified';
+
+      // Set document images
+      if (user.selfie_path) {
+        document.getElementById('selfieImage').src = `http://localhost:3000/${user.selfie_path}`;
+      }
+      if (user.gov_id_path) {
+        document.getElementById('govIdImage').src = `http://localhost:3000/${user.gov_id_path}`;
+      }
+    }
+
+    function showError(message) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('error').textContent = message;
+    }
+
+    function openImage(src) {
+      window.open(src, '_blank');
+    }
+
+    function logout() {
+      localStorage.removeItem('userLoggedIn');
+      localStorage.removeItem('userData');
+      window.location.href = 'user-login.html';
+    }
+  </script>
+</body>
+</html> 
